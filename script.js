@@ -22,7 +22,9 @@ const operationMap = {
   };
 
 function operate(a, b, operator) {
-    console.log(operationMap[operator](a, b));
+    usedOperator = false;
+    displayValue = operationMap[operator](a, b);
+    display();
 }
 
 const answer = document.querySelector('.answer');
@@ -33,8 +35,12 @@ function display() {
 function handleNumbers(event) {
     const number = event.target.dataset.value;
     if (startCalculations) {
-        displayValue = number;
         startCalculations = false;
+        if (number!=='.') {
+            displayValue = number;
+        } else {
+            displayValue += number;
+        }
     } else {
         displayValue += number;
     }
@@ -43,20 +49,43 @@ function handleNumbers(event) {
 
 function handleOperations(event) {
     const operation = event.target.dataset.value;
-
+    if (!usedOperator) {
+        usedOperator = true;
+        numA = parseFloat(displayValue);
+        operator = operation;
+    } else {
+        operate(numA, numB, operator);
+        usedOperator = true;
+        numA = displayValue;
+        operator = operation;
+        displayValue += operator;
+    }
+    display();
 }
 
+function handleClear(event) {
+    displayValue = '0';
+    startCalculations = true;
+    numA = null;
+    numB = null;
+    operator = null;
+    usedOperator = false;
+    display();
+}
 
-let numA = 1;
-let numB = 1;
-let operator = "add";
+let numA = null;
+let numB = null;
+let operator = null;
 let displayValue = '0';
 let startCalculations = true;
+let usedOperator = false;
 
 
 const numberButtons = document.querySelectorAll('.number');
 const operationButtons = document.querySelectorAll('.operation');
 const decimalButton = document.querySelector('.decimal');
+const clearButton = document.querySelector('.clear');
+const equalButton = document.querySelector('.equal');
 numberButtons.forEach(button => {
     button.addEventListener("click", handleNumbers);
     console.log("AAA");
@@ -69,3 +98,9 @@ decimalButton.addEventListener("click", (event) => {
         handleNumbers(event);
     }
 });
+clearButton.addEventListener("click", (event) => {
+    handleClear(event);
+})
+equalButton.addEventListener("click", () => {
+    operate(numA, numB, operator);
+})
