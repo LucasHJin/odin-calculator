@@ -15,16 +15,17 @@ function divide(a, b) {
 }
 
 const operationMap = {
-    add,
-    subtract,
-    multiply,
-    divide,
+    "+": add,
+    "-": subtract,
+    "*": multiply,
+    "/": divide,
   };
 
 function operate(a, b, operator) {
     usedOperator = false;
     displayValue = operationMap[operator](a, b);
     display();
+    numA = displayValue;
 }
 
 const answer = document.querySelector('.answer');
@@ -51,14 +52,29 @@ function handleOperations(event) {
     const operation = event.target.dataset.value;
     if (!usedOperator) {
         usedOperator = true;
+        startCalculations = false;
         numA = parseFloat(displayValue);
         operator = operation;
+        displayValue += operation;
     } else {
-        operate(numA, numB, operator);
-        usedOperator = true;
-        numA = displayValue;
-        operator = operation;
-        displayValue += operator;
+        const operatorRegularExpression = /[+\-/*]/;
+        if (numA>=0) {
+            const operatorIndex = displayValue.search(operatorRegularExpression);
+            numB = parseFloat(displayValue.slice(operatorIndex+1));
+            operate(numA, numB, operator);
+            usedOperator = true;
+            numA = parseFloat(displayValue);
+            operator = operation;
+            displayValue += operation;
+        } else {
+            const operatorIndex = displayValue.slice(1).search(operatorRegularExpression);
+            numB = parseFloat(displayValue.slice(operatorIndex+2));
+            operate(numA, numB, operator);
+            usedOperator = true;
+            numA = parseFloat(displayValue);
+            operator = operation;
+            displayValue += operation;
+        }
     }
     display();
 }
@@ -88,7 +104,6 @@ const clearButton = document.querySelector('.clear');
 const equalButton = document.querySelector('.equal');
 numberButtons.forEach(button => {
     button.addEventListener("click", handleNumbers);
-    console.log("AAA");
 });
 operationButtons.forEach(button => {
     button.addEventListener("click", handleOperations);
@@ -102,5 +117,22 @@ clearButton.addEventListener("click", (event) => {
     handleClear(event);
 })
 equalButton.addEventListener("click", () => {
-    operate(numA, numB, operator);
+    const operatorRegularExpression = /[+\-/*]/; //sequence of characters that defines a search pattern
+    //square brackets = character set, \- to represent literal minus
+    if (numA>=0) {
+        let operatorIndex = displayValue.search(operatorRegularExpression);
+
+        if (operatorIndex !== -1) {
+            numB = parseFloat(displayValue.slice(operatorIndex+1));
+            operate(numA, numB, operator);
+        }
+    } else {
+
+        let operatorIndex = displayValue.slice(1).search(operatorRegularExpression);
+
+        if (operatorIndex !== -1) {
+            numB = parseFloat(displayValue.slice(operatorIndex+2));
+            operate(numA, numB, operator);
+        }
+    }
 })
